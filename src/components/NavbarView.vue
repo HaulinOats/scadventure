@@ -6,8 +6,10 @@
       <div class="col-xs-9">
         <ul class="pull-right list-unstyled list-inline">
           <!-- <li v-on:click="openModal">Open Modal</li> -->
-          <li v-on:click="checkLoginStatus">Log Check</li>
-          <li><a href="#/login">Login</a></li>
+          <li>Logged In: {{isLoggedIn}}</li>
+          <li v-on:click="checkFBAPI">Check FB API</li>
+          <li v-if="isLoggedIn" v-on:click="logout">Logout</li>
+          <li v-else v-on:click="login">Login</li>
         </ul>
       </div>
     </div>
@@ -15,42 +17,51 @@
 </template>
 
 <script>
+var ref = new Firebase("https://shining-heat-6737.firebaseio.com");
 export default {
   name:"NavbarView",
-  methods: {
-    checkLoginStatus: function(){
-      FB.getLoginStatus(function(response) {
-        statusChangeCallback(response);
-      });
-
-      //Facebook SDK Checks
-      function statusChangeCallback(response) {
-        console.log('statusChangeCallback');
-        console.log(response);
-        // The response object is returned with a status field that lets the
-        // app know the current login status of the person.
-        // Full docs on the response object can be found in the documentation
-        // for FB.getLoginStatus().
-        if (response.status === 'connected') {
-          // Logged into your app and Facebook.
-          testAPI();
-        } else if (response.status === 'not_authorized') {
-          // The person is logged into Facebook, but not your app.
-          console.log('please login to this app');
-        } else {
-          // The person is not logged into Facebook, so we're not sure if
-          // they are logged into this app or not.
-          console.log('please login to facebook');
-        }
-      } 
-
-      function testAPI() {
-        console.log('Welcome!  Fetching your information.... ');
-        FB.api('/me', function(response) {
-          console.log('Successful login for: ' + response.name);
-        });
-      }
+  data: function(){
+    return {
+      isLoggedIn:false
     }
+  },
+  methods: {
+    checkFBAPI: function(){
+      console.log('check fb api');
+    },
+    login:function(){
+      let $scope = this;
+      ref.authWithOAuthPopup("facebook", function(error, authData) {
+        if (error) {
+          console.log("Login Failed!", error);
+        } else {
+          console.log("Authenticated successfully with payload:", authData);
+          localStorage.setItem('authToken', authData.facebook.accessToken)
+          $scope.isLoggedIn = true;
+        }
+      }, {
+        scope: "email"
+      });
+    },
+    logout:function(){
+      ref.unauth();
+      localStorage.removeItem('authToken');
+      this.isLoggedIn = false;
+    }
+  },
+  activate:function(done){
+    let $scope = this;
+    if (localStorage.getItem('authToken') != null) {
+      ref.authWithOAuthToken("facebook", localStorage.getItem('authToken'), function(error, authData) {
+        if (error) {
+          console.log("Login Failed!", error);
+        } else {
+          console.log("Authenticated successfully with payload:", authData);
+          $scope.isLoggedIn = true;
+        }
+      });
+    }
+    done()
   }
 }
 </script>
@@ -74,5 +85,12 @@ h1 {
 }
 ul li {
   cursor:pointer;
+  padding:0 2% 0 2%;
+  border-left:solid thin black;
+  font-size:20px;
+  margin-top:20px;
+}
+ul li:first-child {
+  border:none;
 }
 </style>

@@ -17,6 +17,11 @@ import NavbarView from './NavbarView.vue'
 import ModalView from './ModalView.vue'
 export default {
   name:'App',
+  data(){
+    return {
+      // isLoggedIn:false
+    }
+  },
   components: {
     NavbarView,
     ModalView
@@ -25,6 +30,12 @@ export default {
 </script>
 
 <style>
+.hide {
+  display:none !important;
+}
+.show {
+  display:inline-block !important;
+}
 body {
   padding-top:70px;
 }
