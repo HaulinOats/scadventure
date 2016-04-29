@@ -47,7 +47,7 @@ export default {
       this.isLoggedIn = false;
     }
   },
-  compiled(){
+  created(){
     let $scope = this;
     if (localStorage.getItem('authToken') != null) {
       ref.authWithOAuthToken("facebook", localStorage.getItem('authToken'), function(error, authData) {

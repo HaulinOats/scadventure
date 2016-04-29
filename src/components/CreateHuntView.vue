@@ -21,7 +21,8 @@ export default {
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
         center: {lat: 28.5447416, lng: -81.39492640000003},
-        zoom: 12
+        zoom: 12,
+        // mapTypeId: google.maps.MapTypeId.SATELLITE
       });
     }
     initMap();
