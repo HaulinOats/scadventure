@@ -36,6 +36,12 @@ export default {
 .show {
   display:inline-block !important;
 }
+body,
+html {
+  padding:0;
+  margin:0;
+  height:100%;
+}
 body {
   padding-top:70px;
 }

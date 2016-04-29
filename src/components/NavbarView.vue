@@ -1,17 +1,15 @@
 <template>
-  <div id="wrapper container-fluid">
-    <!-- header -->
-    <div id="header">
-      <h1 class="col-xs-3"><a href="#/">Scadventure</a></h1>
-      <div class="col-xs-9">
-        <ul class="pull-right list-unstyled list-inline">
-          <!-- <li v-on:click="openModal">Open Modal</li> -->
-          <li>Logged In: {{isLoggedIn}}</li>
-          <li v-on:click="checkFBAPI">Check FB API</li>
-          <li v-if="isLoggedIn" v-on:click="logout">Logout</li>
-          <li v-else v-on:click="login">Login</li>
-        </ul>
-      </div>
+  <!-- header -->
+  <div id="header">
+    <h1 class="col-xs-3"><a href="#/">Scadventure</a></h1>
+    <div class="col-xs-9">
+      <ul class="pull-right list-unstyled list-inline">
+        <!-- <li v-on:click="openModal">Open Modal</li> -->
+        <li>Logged In: {{isLoggedIn}}</li>
+        <li v-on:click="checkFBAPI">Check FB API</li>
+        <li v-if="isLoggedIn" v-on:click="logout">Logout</li>
+        <li v-else v-on:click="login">Login</li>
+      </ul>
     </div>
   </div>
 </template>
@@ -49,7 +47,7 @@ export default {
       this.isLoggedIn = false;
     }
   },
-  activate:function(done){
+  compiled(){
     let $scope = this;
     if (localStorage.getItem('authToken') != null) {
       ref.authWithOAuthToken("facebook", localStorage.getItem('authToken'), function(error, authData) {
@@ -61,7 +59,6 @@ export default {
         }
       });
     }
-    done()
   }
 }
 </script>

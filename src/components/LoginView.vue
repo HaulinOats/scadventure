@@ -24,9 +24,6 @@ export default {
 </script>
   
 <style>
-body {
-  padding-top:70px;
-}
 #header  {
   z-index: 10;
   height:70px;

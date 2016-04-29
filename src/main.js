@@ -7,6 +7,7 @@ import ItemView from './components/ItemView.vue'
 import UserView from './components/UserView.vue'
 import HomeView from './components/HomeView.vue'
 import LoginView from './components/LoginView.vue'
+import CreateHuntView from './components/CreateHuntView.vue'
 
 // install router
 Vue.use(Router)
@@ -24,6 +25,9 @@ router.map({
   },
   '/login': {
     component: LoginView
+  },
+  '/create-hunt': {
+    component: CreateHuntView
   },
   '/news/:page': {
     component: NewsView
