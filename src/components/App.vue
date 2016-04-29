@@ -1,12 +1,11 @@
 <template>
-  <div id="wrapper container-fluid">
-    <modal-view></modal-view>
+  <div id="wrapper">
     <navbar-view></navbar-view>
     <!-- main view -->
     <router-view
-      class="view"
+      :is="view"
       keep-alive
-      transition
+      transition="fade"
       transition-mode="out-in">
     </router-view>
   </div>
@@ -30,20 +29,36 @@ export default {
 </script>
 
 <style>
-.hide {
-  display:none !important;
+.fade-transition {
+  transition: opacity .3s ease;
 }
-.show {
-  display:inline-block !important;
+.fade-enter, .fade-leave {
+  opacity: 0;
 }
 body,
 html {
   padding:0;
   margin:0;
   height:100%;
+  background: #2B3643;
 }
 body {
   padding-top:70px;
+}
+button:active {
+  box-shadow: none !important;
+}
+a {
+  color:beige;
+  text-decoration: none !important
+}
+a:active,
+a:visited {
+  text-decoration: none !important;
+  color:beige;
+}
+#wrapper {
+  height:100%;
 }
 #header  {
   z-index: 10;

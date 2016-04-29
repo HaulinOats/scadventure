@@ -1,16 +1,21 @@
 <template>
   <!-- header -->
   <div id="header">
-    <h1 class="col-xs-3"><a href="#/">Scadventure</a></h1>
+    <h1 class="col-xs-3" v-on:click="closeMenu"><a href="#/">Scadventure</a></h1>
     <div class="col-xs-9">
       <ul class="pull-right list-unstyled list-inline">
         <!-- <li v-on:click="openModal">Open Modal</li> -->
-        <li>Logged In: {{isLoggedIn}}</li>
-        <li v-on:click="checkFBAPI">Check FB API</li>
-        <li v-if="isLoggedIn" v-on:click="logout">Logout</li>
-        <li v-else v-on:click="login">Login</li>
+        <li id="menu-icon" v-on:click="openCloseMenu"><span class="glyphicon glyphicon-align-justify"></span></li>
       </ul>
     </div>
+  </div>
+  <div id="main-menu" v-bind:class="{'hide-menu': menuIsClosed}">
+    <ul>
+      <li v-on:click="closeMenu"><a href="#!/create-hunt">Create Hunt</a></li>
+      <li v-on:click="closeMenu"><a href="#!/my-profile">My Profile</a></li>
+      <li v-if="isLoggedIn" v-on:click="logout"><a>Logout</a></li>
+      <li v-else v-on:click="login"><a>Login</a></li>
+    </ul>
   </div>
 </template>
 
@@ -20,10 +25,23 @@ export default {
   name:"NavbarView",
   data: function(){
     return {
-      isLoggedIn:false
+      isLoggedIn:false,
+      menuIsClosed:true
     }
   },
   methods: {
+    openCloseMenu:function() {
+      //if menu is closed, open it
+      //otherwise, close it
+      if (this.menuIsClosed) {
+        this.menuIsClosed = false;
+      } else {
+        this.menuIsClosed = true;
+      }
+    },
+    closeMenu:function(){
+      this.menuIsClosed = true;
+    },
     checkFBAPI: function(){
       console.log('check fb api');
     },
@@ -31,9 +49,9 @@ export default {
       let $scope = this;
       ref.authWithOAuthPopup("facebook", function(error, authData) {
         if (error) {
-          console.log("Login Failed!", error);
+          // console.log("Login Failed!", error);
         } else {
-          console.log("Authenticated successfully with payload:", authData);
+          // console.log("Authenticated successfully with payload:", authData);
           localStorage.setItem('authToken', authData.facebook.accessToken)
           $scope.isLoggedIn = true;
         }
@@ -52,9 +70,9 @@ export default {
     if (localStorage.getItem('authToken') != null) {
       ref.authWithOAuthToken("facebook", localStorage.getItem('authToken'), function(error, authData) {
         if (error) {
-          console.log("Login Failed!", error);
+          // console.log("Login Failed!", error);
         } else {
-          console.log("Authenticated successfully with payload:", authData);
+          // console.log("Authenticated successfully with payload:", authData);
           $scope.isLoggedIn = true;
         }
       });
@@ -75,19 +93,66 @@ body {
   left:0;
   width:100%;
   padding:0 1% 0 1%;
-  background:lightblue;
+  background:#2D496D;
+  box-shadow:0px 0px 4px black;
+  color:#D9EDF7;
 }
-h1 {
+#header h1 {
   margin-top:13px;
 }
-ul li {
+#main-menu {
+  position: absolute;
+  top:70px;
+  background: #2B433F;
+  width: 100%;
+  z-index: 9;
+  text-align:center;
+  transition:1s ease-in-out;
+}
+#menu-icon {
+    padding: 10px 40px;
+    margin: 0;
+    font-size: 27px;
+    cursor:pointer;
+}
+#menu-icon span {
+    padding: 10px;
+    border: solid 2px black;
+    border-radius: 3px;
+    background:white;
+    color:rgb(40,40,40);
+}
+#main-menu ul {
+  z-index: 9;
+  padding:0;
+  margin:0;
+  list-style-type: none;
+}
+#main-menu li {
+  border-bottom:solid thin black;
+  cursor:pointer;
+  font-size:22px;
+}
+#main-menu li:hover {
+  background: darkslategrey;
+}
+#main-menu li a {
+    width: 100%;
+    height: 100%;
+    display: block;
+    padding: 15px 0;
+}
+.hide-menu {
+  top:-250px !important;
+}
+/*#header ul li {
   cursor:pointer;
   padding:0 2% 0 2%;
   border-left:solid thin black;
   font-size:20px;
   margin-top:20px;
 }
-ul li:first-child {
+#header ul li:first-child {
   border:none;
-}
+}*/
 </style>

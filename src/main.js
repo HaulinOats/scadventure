@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import VueFire from 'vuefire'
 import { domain, fromNow } from './filters'
 import App from './components/App.vue'
 import NewsView from './components/NewsView.vue'
@@ -7,11 +8,13 @@ import ItemView from './components/ItemView.vue'
 import UserView from './components/UserView.vue'
 import HomeView from './components/HomeView.vue'
 import LoginView from './components/LoginView.vue'
+import ModalView from './components/ModalView.vue'
 import CreateHuntView from './components/CreateHuntView.vue'
+import ProfileView from './components/ProfileView.vue'
 
 // install router
 Vue.use(Router)
-
+Vue.use(VueFire)
 // register filters globally
 Vue.filter('fromNow', fromNow)
 Vue.filter('domain', domain)
@@ -25,6 +28,9 @@ router.map({
   },
   '/login': {
     component: LoginView
+  },
+  '/my-profile': {
+    component: ProfileView
   },
   '/create-hunt': {
     component: CreateHuntView
