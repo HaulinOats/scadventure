@@ -33,11 +33,12 @@ export default {
     openCloseMenu:function() {
       //if menu is closed, open it
       //otherwise, close it
-      if (this.menuIsClosed) {
-        this.menuIsClosed = false;
-      } else {
-        this.menuIsClosed = true;
-      }
+      // if (this.menuIsClosed) {
+      //   this.menuIsClosed = false;
+      // } else {
+      //   this.menuIsClosed = true;
+      // }
+      this.menuIsClosed = !this.menuIsClosed;
     },
     closeMenu:function(){
       this.menuIsClosed = true;
@@ -107,7 +108,7 @@ body {
   width: 100%;
   z-index: 9;
   text-align:center;
-  transition:1s ease-in-out;
+  transition:.5s ease-in-out;
 }
 #menu-icon {
     padding: 10px 40px;

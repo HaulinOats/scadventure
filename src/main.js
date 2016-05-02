@@ -11,6 +11,8 @@ import LoginView from './components/LoginView.vue'
 import ModalView from './components/ModalView.vue'
 import CreateHuntView from './components/CreateHuntView.vue'
 import ProfileView from './components/ProfileView.vue'
+import ShowHuntsView from './components/ShowHuntsView.vue'
+import SingleHuntView from './components/SingleHuntView.vue'
 
 // install router
 Vue.use(Router)
@@ -34,6 +36,12 @@ router.map({
   },
   '/create-hunt': {
     component: CreateHuntView
+  },
+  '/my-hunts': {
+    component: ShowHuntsView
+  },
+  '/edit-hunt/:id': {
+    component: SingleHuntView
   },
   '/news/:page': {
     component: NewsView

@@ -59,6 +59,8 @@ a:visited {
 }
 #wrapper {
   height:100%;
+  color:white;
+  padding:0 10px;
 }
 #header  {
   z-index: 10;
