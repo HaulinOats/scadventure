@@ -60,7 +60,6 @@ a:visited {
 #wrapper {
   height:100%;
   color:white;
-  padding:0 10px;
 }
 #header  {
   z-index: 10;
@@ -74,5 +73,14 @@ a:visited {
 }
 h1 {
   margin-top:13px;
+}
+.labels {
+    color: white;
+    background-color: blue;
+    font-family:"Lucida Grande", "Arial", sans-serif;
+    font-size: 16px;
+    text-align: center;
+    width: 26px;
+    white-space: nowrap;
 }
 </style>

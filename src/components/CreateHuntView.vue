@@ -49,6 +49,7 @@ export default {
         
         for (var i = 0; i < this.markers.length; i++) {
           huntArr.push({
+            'label':this.markers[i].label,
             'lat':this.markers[i].getPosition().lat(),
             'lng':this.markers[i].getPosition().lng()
           });
@@ -99,6 +100,7 @@ export default {
               huntName:huntName, 
               markers:huntArr
             });
+            sessionStorage.removeItem('currentMarkerIndex');
             window.location.href = '#!/edit-hunt/' + savedHunt.key();
             savedHunt.on('value', function(snapshot){
               console.log(snapshot.val());
@@ -119,7 +121,7 @@ export default {
   },
   ready() {
     let $scope = this;
-    var ref = new Firebase("https://shining-heat-6737.firebaseio.com");
+    let ref = new Firebase("https://shining-heat-6737.firebaseio.com");
     if (localStorage.getItem('authToken') != null) {
       ref.authWithOAuthToken("facebook", localStorage.getItem('authToken'), function(error, authData) {
         if (error) {
@@ -141,38 +143,42 @@ export default {
       navigator.geolocation.getCurrentPosition(showPosition);
       coords.lat = Number(sessionStorage.getItem('latitude'));
       coords.lng = Number(sessionStorage.getItem('longitude'));
+      initMap();
       function showPosition(position) {
         sessionStorage.setItem('latitude', position.coords.latitude);
         sessionStorage.setItem('longitude', position.coords.longitude)
       }
     } else {
       this.showModal = true;
-      this.modalMsg = "For best experience, please allow our application access to your geolocation.";
+      this.modalMsg = "For best experience, please allow our application access to your geolocation.  Please allow access to your geolocation and reload this page or click 'Reset Map' on the right hand side of this screen.";
     }
 
-    //Initialize Google Map
     // google.maps.event.addDomListener(window, 'load', initMap);
-    initMap();
+    //Initialize Google Map
     function initMap() {
       let mapCoords = coords || {lat: 28.54, lng: -81.39};
+      console.log('mapCoords: ',mapCoords);
       $scope.map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: mapCoords.lat, lng: mapCoords.lng}, 
+        center: mapCoords, 
         zoom: 12,
         panControl:true,
         scrollWheel:true,
         disableDoubleClickZoom:true,
         streetViewControl:true
-        // mapTypeId: google.maps.MapTypeId.SATELLITE
       });
 
       //when map is clicked, add marker to map and to 'markers' array
+      let labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       $scope.map.addListener('click', function(event) {
+        if ($scope.markerCount < 26) {  
           let marker = new google.maps.Marker({
             map:$scope.map,
             draggable:true,
+            label:labels.charAt($scope.markerCount),
             animation:google.maps.Animation.DROP,
             position:event.latLng
           });
+          $scope.markerCount++;
 
           //remove marker when it's double clicked
           marker.addListener('dblclick', function(event){
@@ -184,19 +190,15 @@ export default {
             console.log('remove marker: ', $scope.markers);
           });
 
-          // marker.addListener('drag', function(event){
-          //   console.log("lat: ", this.getPosition().lat());
-          //   console.log("lng: ", this.getPosition().lng());
-          // });
-
           //add marker to markers array and increase marker count
           $scope.markers.push(marker);
-          $scope.markerCount++;
           console.log('added marker: ', $scope.markers);
+        } else {
+          $scope.showModal = true;
+          $scope.modalMsg = "Only a maximum of 26 markers are allowed per hunt";
+        }
       });
     }
-
-
   },
   events: {
     'hide-modal': function() {
@@ -281,5 +283,11 @@ export default {
 #is-public-checkbox label {
   font-weight: 100;
   font-size:20px;
+}
+#basic-marker {
+  width:30px;
+  position:absolute;
+  top:100px;
+  left:0;
 }
 </style>

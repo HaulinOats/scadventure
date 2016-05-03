@@ -8,14 +8,14 @@
         <li id="menu-icon" v-on:click="openCloseMenu"><span class="glyphicon glyphicon-align-justify"></span></li>
       </ul>
     </div>
-  </div>
-  <div id="main-menu" v-bind:class="{'hide-menu': menuIsClosed}">
-    <ul>
-      <li v-on:click="closeMenu"><a href="#!/create-hunt">Create Hunt</a></li>
-      <li v-on:click="closeMenu"><a href="#!/my-profile">My Profile</a></li>
-      <li v-if="isLoggedIn" v-on:click="logout"><a>Logout</a></li>
-      <li v-else v-on:click="login"><a>Login</a></li>
-    </ul>
+    <div id="main-menu" v-bind:class="{'hide-menu': menuIsClosed}">
+      <ul>
+        <li v-if="isLoggedIn" v-on:click="closeMenu"><a href="#!/create-hunt">Create Hunt</a></li>
+        <li v-if="isLoggedIn" v-on:click="closeMenu"><a href="#!/my-profile">My Profile</a></li>
+        <li v-if="isLoggedIn" v-on:click="logout"><a>Logout</a></li>
+        <li v-else v-on:click="login"><a>Login</a></li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -26,18 +26,12 @@ export default {
   data: function(){
     return {
       isLoggedIn:false,
-      menuIsClosed:true
+      menuIsClosed:true,
+      userId:null
     }
   },
   methods: {
     openCloseMenu:function() {
-      //if menu is closed, open it
-      //otherwise, close it
-      // if (this.menuIsClosed) {
-      //   this.menuIsClosed = false;
-      // } else {
-      //   this.menuIsClosed = true;
-      // }
       this.menuIsClosed = !this.menuIsClosed;
     },
     closeMenu:function(){
@@ -52,7 +46,14 @@ export default {
         if (error) {
           // console.log("Login Failed!", error);
         } else {
-          // console.log("Authenticated successfully with payload:", authData);
+          console.log("Authenticated successfully with payload:", authData);
+          let userRef = new Firebase("https://shining-heat-6737.firebaseio.com/users/");
+          userRef.push({
+            "uid":authData.uid,
+            "fbid":authData.facebook.id,
+            "name":authData.facebook.displayName,
+            "email":authData.facebook.email
+          });
           localStorage.setItem('authToken', authData.facebook.accessToken)
           $scope.isLoggedIn = true;
         }
@@ -75,6 +76,7 @@ export default {
         } else {
           // console.log("Authenticated successfully with payload:", authData);
           $scope.isLoggedIn = true;
+          $scope.userId = authData.uid;
         }
       });
     }
@@ -104,11 +106,11 @@ body {
 #main-menu {
   position: absolute;
   top:70px;
+  left:0;
   background: #2B433F;
   width: 100%;
   z-index: 9;
   text-align:center;
-  transition:.5s ease-in-out;
 }
 #menu-icon {
     padding: 10px 40px;
@@ -144,7 +146,7 @@ body {
     padding: 15px 0;
 }
 .hide-menu {
-  top:-250px !important;
+  display:none !important;
 }
 /*#header ul li {
   cursor:pointer;

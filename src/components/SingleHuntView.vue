@@ -1,9 +1,15 @@
 <template>
 	<div id="single-hunt-view">
-		<table id="edit-hunt-table">
+		<table id="single-hunt-table">
 			<tr>
 				<td class="label-column">Hunt Name:</td>
-				<td class="edit-column"><input type="text" v-on:keyup.enter="saveHuntName" id="edit-hunt-name" v-model="huntObj.huntName" placeholder="Enter name for scavenger hunt" /><span class="glyphicon glyphicon-floppy-disk save-field" v-on:click="saveHuntName"></span></td>
+				<td class="edit-column">
+					<div v-if="sameUser">
+						<input type="text" v-on:keyup.enter="saveHuntName" id="single-hunt-name" v-model="huntObj.huntName" placeholder="Enter name for scavenger hunt" /><span class="glyphicon glyphicon-floppy-disk save-field" v-on:click="saveHuntName"></span>
+					</div>
+					<div v-else>
+						<p>{{huntObj.huntName}}</p>
+				</td>
 			</tr>
 			<tr>
 				<td class="label-column">Created On:</td>
@@ -31,20 +37,36 @@
 				</td>
 			</tr>
 		</table>
-		<div id="map"></div>
+		<div id="edit-map-outer">
+			<div id="edit-map"></div>
+			<div id="modify-marker-container">
+				<h3>Marker {{currentMarker.label}}</h3>
+				<p><b>Latitude: </b>{{currentMarker.lat}}</p>
+				<p><b>Longitude: </b>{{currentMarker.lng}}</p>
+				<p><b>Description: </b> <i v-if="sameUser">(give hints, riddles, or a direct description as to what the person should be looking for around this location)</i></p>
+				<div v-if="sameUser">
+					<textarea id="marker-description" v-on:keyup.enter="saveHuntDescription">{{currentMarker.description}}</textarea>
+					<span class="glyphicon glyphicon-floppy-disk save-field-desc" v-on:click="saveHuntDescription"></span>
+				</div>
+				<div v-else>
+					<p>{{currentMarker.description}}</p>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script>
 export default {
-	name:"SingleHuntView",
+	name:"EditHuntView",
 	data() {
 		return {
 			huntId:"",
 			huntObj:null,
 			userEmail:null,
 			sameUser:false,
-			huntRef:null
+			huntRef:null,
+			currentMarker:null
 		}
 	},
 	methods: {
@@ -53,8 +75,15 @@ export default {
 			this.huntRef.update({isPublic:this.huntObj.isPublic});
 		},
 		saveHuntName:function(){
-			let huntNameValue = document.getElementById('edit-hunt-name').value;
+			let huntNameValue = document.getElementById('single-hunt-name').value;
 			this.huntRef.update({huntName:huntNameValue});
+		},
+		saveHuntDescription:function(){
+			console.log('save desc');
+			let huntDescription = document.getElementById('marker-description').value,
+					markerIndex = this.currentMarker.arrIdx;
+					sessionStorage.setItem('currentMarkerIndex', markerIndex);
+			this.huntRef.child('markers').child(markerIndex).update({description:huntDescription});
 		}
 	},
 	computed:{
@@ -72,46 +101,85 @@ export default {
 	},
 	route: {
     data ({ to }) {
-    	let $scope = this;
       this.huntId = to.params.id;
-
-      //get hunt
-			this.huntRef = new Firebase("https://shining-heat-6737.firebaseio.com/hunts/" + this.huntId);
-			this.huntRef.on('value', function(snapshot){
-        $scope.huntObj = snapshot.val();
-        console.log($scope.huntObj);
-        //check user
-	      var userRef = new Firebase("https://shining-heat-6737.firebaseio.com");
-		    if (localStorage.getItem('authToken') != null) {
-		      userRef.authWithOAuthToken("facebook", localStorage.getItem('authToken'), function(error, authData) {
-		        if (error) {
-		          console.log("Login Failed!", error);
-		        } else {
-		          $scope.userEmail = authData.facebook.email;
-		          if ($scope.userEmail === $scope.huntObj.creator.email) {
-		          	$scope.sameUser = true;
-		          }
-		        }
-		      });
-		    }
-      });
     }
+	},
+	ready() {
+		let $scope = this;
+		//get hunt
+		this.huntRef = new Firebase("https://shining-heat-6737.firebaseio.com/hunts/" + this.huntId);
+		this.huntRef.on('value', function(snapshot){
+      $scope.huntObj = snapshot.val();
+      console.log('hunt obj: ', $scope.huntObj);
+      let markerIdx = sessionStorage.getItem('currentMarkerIndex') != null ? sessionStorage.getItem('currentMarkerIndex') : 0;
+      $scope.currentMarker = $scope.huntObj.markers[markerIdx];
+      console.log('current marker: ',$scope.currentMarker);
+			//Initialize Google Map
+			initMap();
+	    function initMap() {
+	      let mapCoords = $scope.huntObj.center;
+	      $scope.map = new google.maps.Map(document.getElementById('edit-map'), {
+	        center: mapCoords, 
+	        zoom: 12,
+	        panControl:true,
+	        scrollWheel:true,
+	        disableDoubleClickZoom:true,
+	        streetViewControl:true
+	      });
+
+	      //place markers on map
+	      $scope.huntObj.markers.forEach(function(element, index){
+	      	let marker = new google.maps.Marker({
+	      		map:$scope.map,
+	      		draggable:false,
+	      		label:element.label,
+	      		position:{lat:element.lat, lng:element.lng}
+	      	});
+
+		      //show marker data when a marker is clicked
+          marker.addListener('click', function(event){
+          	$scope.currentMarker = $scope.huntObj.markers[index];
+          	$scope.currentMarker.arrIdx = index;
+          });
+	      });
+	    }
+      console.log($scope.huntObj);
+      //check user
+      var userRef = new Firebase("https://shining-heat-6737.firebaseio.com");
+	    if (localStorage.getItem('authToken') != null) {
+	      userRef.authWithOAuthToken("facebook", localStorage.getItem('authToken'), function(error, authData) {
+	        if (error) {
+	          console.log("Login Failed!", error);
+	        } else {
+	        	console.log('facebook auth: ',authData.facebook);
+	          $scope.userEmail = authData.facebook.email;
+	          if ($scope.userEmail === $scope.huntObj.creator.email) {
+	          	$scope.sameUser = true;
+	          }
+	        }
+	      });
+	    }
+    });
 	}
 }
 </script>
 
 <style>
-	#edit-hunt-table {
+	#single-hunt-view {
+		padding:0 10px;
+		height:100%;
+	}
+	#single-hunt-table {
 		width:100%;
 		font-size:22px;
 	}
-	#edit-hunt-table tr {
+	#single-hunt-table tr {
 		border-bottom: solid thin;
 	}
-	#edit-hunt-table input {
+	#single-hunt-table input {
 		color:rgb(40,40,40);
 	}
-	#edit-hunt-table td{
+	#single-hunt-table td{
 		padding:10px 0;
 	}
 	.label-column {
@@ -142,5 +210,36 @@ export default {
 		font-size:30px;
 		cursor:pointer;
 		vertical-align: middle;
+	}
+	#edit-map-outer {
+		height:100%;
+		width:100%;
+	}
+	#edit-map {
+		float:left;
+		width:70%;
+		height:100%;
+	}
+	#modify-marker-container {
+		padding-left:10px;
+		display:inline-block;
+		width:30%;
+		height:100%;
+	}
+	#modify-marker-container h3 {
+		font-size:30px;
+	}
+	#modify-marker-container p {
+		font-size:22px;
+	}
+	#marker-description {
+		width:100%;
+		min-height:300px;
+		color:black;
+	}
+	.save-field-desc {
+		font-size: 32px;
+    float: right;
+    cursor: pointer;
 	}
 </style>

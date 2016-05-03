@@ -40,7 +40,7 @@ router.map({
   '/my-hunts': {
     component: ShowHuntsView
   },
-  '/edit-hunt/:id': {
+  '/view-hunt/:id': {
     component: SingleHuntView
   },
   '/news/:page': {
