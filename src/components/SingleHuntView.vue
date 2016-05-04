@@ -17,12 +17,12 @@
 			</tr>
 			<tr>
 				<td class="label-column">Created By:</td>
-				<td class="edit-column">{{huntObj.creator.name}}</td>
+				<td class="edit-column">{{huntObj.creatorName}}</td>
 			</tr>
 			<tr>
 			<tr>
 				<td class="label-column">Map Location:</td>
-				<td class="edit-column">{{huntObj.location.city}}, {{huntObj.location.state}}, {{huntObj.location.zip_code}}</td>
+				<td class="edit-column">{{huntObj.city}}, {{huntObj.state}}, {{huntObj.zip_code}}</td>
 			</tr>
 			<tr>
 			<tr>
@@ -66,7 +66,9 @@ export default {
 			userEmail:null,
 			sameUser:false,
 			huntRef:null,
-			currentMarker:null
+			currentMarkerIdx:0,
+			currentMarker:null,
+			hasReloaded:false
 		}
 	},
 	methods: {
@@ -80,10 +82,8 @@ export default {
 		},
 		saveHuntDescription:function(){
 			console.log('save desc');
-			let huntDescription = document.getElementById('marker-description').value,
-					markerIndex = this.currentMarker.arrIdx;
-					sessionStorage.setItem('currentMarkerIndex', markerIndex);
-			this.huntRef.child('markers').child(markerIndex).update({description:huntDescription});
+			let huntDescription = document.getElementById('marker-description').value;
+			this.huntRef.child('markers').child(this.currentMarkerIdx).update({description:huntDescription});
 		}
 	},
 	computed:{
@@ -111,8 +111,7 @@ export default {
 		this.huntRef.on('value', function(snapshot){
       $scope.huntObj = snapshot.val();
       console.log('hunt obj: ', $scope.huntObj);
-      let markerIdx = sessionStorage.getItem('currentMarkerIndex') != null ? sessionStorage.getItem('currentMarkerIndex') : 0;
-      $scope.currentMarker = $scope.huntObj.markers[markerIdx];
+      $scope.currentMarker = $scope.huntObj.markers[$scope.currentMarkerIdx];
       console.log('current marker: ',$scope.currentMarker);
 			//Initialize Google Map
 			initMap();
@@ -139,25 +138,27 @@ export default {
 		      //show marker data when a marker is clicked
           marker.addListener('click', function(event){
           	$scope.currentMarker = $scope.huntObj.markers[index];
-          	$scope.currentMarker.arrIdx = index;
+          	$scope.currentMarkerIdx = index;
           });
 	      });
 	    }
       console.log($scope.huntObj);
-      //check user
-      var userRef = new Firebase("https://shining-heat-6737.firebaseio.com");
-	    if (localStorage.getItem('authToken') != null) {
-	      userRef.authWithOAuthToken("facebook", localStorage.getItem('authToken'), function(error, authData) {
-	        if (error) {
-	          console.log("Login Failed!", error);
-	        } else {
-	        	console.log('facebook auth: ',authData.facebook);
-	          $scope.userEmail = authData.facebook.email;
-	          if ($scope.userEmail === $scope.huntObj.creator.email) {
+      //Auth login and pulling of user data
+	    var ref = new Firebase("https://shining-heat-6737.firebaseio.com");
+	    ref.onAuth(authDataCallback);
+	    // Create a callback which logs the current auth state
+	    function authDataCallback(authData) {
+	      if (authData) {
+	        var user = new Firebase("https://shining-heat-6737.firebaseio.com/users/" + authData.uid);
+	        user.on('value', function(snapshot){
+	          $scope.user = snapshot.val();
+	          if ($scope.huntObj.creatorEmail === $scope.user.email) {
 	          	$scope.sameUser = true;
 	          }
-	        }
-	      });
+	        }, function(errorObj){
+	          console.log('read failed: ', errorObj.code);
+	        });
+	      }
 	    }
     });
 	}

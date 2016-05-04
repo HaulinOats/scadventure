@@ -4,7 +4,6 @@
     <!-- main view -->
     <router-view
       :is="view"
-      keep-alive
       transition="fade"
       transition-mode="out-in">
     </router-view>

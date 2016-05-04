@@ -30,10 +30,10 @@ export default {
       modalMsg:"",
       markerCount:0,
       markers:[],
-      userEmail:null,
       modalConfirmation:false,
       isPublic:true,
-      map:null
+      map:null,
+      user:null
     }
   },
   methods: {
@@ -41,7 +41,7 @@ export default {
       //Save hunt as long as there are at least 5 markers
       if (this.markerCount > 4) {
         let $scope = this,
-            randomHuntNameArr = ["groupie","candour","swearer","purpura","reposit","pyrrole","rappist","mitsvah","stifler","cytozoa","untamed","ozonize","alcalde","ceari","calgary","hearten","typicon","newbery","nilghau","pinesap","clerkly","griever","diagram","flexile","prudish","cannock","exposed","teleran","onitsha","equaled","smidgin","kerbaya","chechen","benetta","nonlife","pappose","dignity","censure","sheriff","couvade","belding","cheerly","frailty","cardiac","bruli","haleiwa","harshen","hibbing","tibbett","optical"],
+            randomHuntNameArr = ["groupie","candour","swearer","purpura","reposit","pyrrole","mitsvah","stifler","cytozoa","untamed","ozonize","alcalde","ceari","calgary","hearten","typicon","newbery","nilghau","pinesap","clerkly","griever","diagram","flexile","prudish","cannock","exposed","teleran","onitsha","equaled","smidgin","kerbaya","chechen","benetta","nonlife","pappose","dignity","censure","sheriff","couvade","belding","cheerly","frailty","cardiac","bruli","haleiwa","harshen","hibbing","tibbett","optical"],
             d = new Date(),
             time = d.getTime(),
             huntName = randomHuntNameArr[Math.floor(Math.random() * randomHuntNameArr.length)] + "_" + time,
@@ -83,28 +83,24 @@ export default {
             //add hunt to database
             var huntRef = new Firebase("https://shining-heat-6737.firebaseio.com/hunts");
             var savedHunt = huntRef.push({
-              creator: {
-                email:$scope.userEmail, name:$scope.userName
-              }, 
+              creatorEmail:$scope.user.email, 
+              creatorName:$scope.user.name,
               center:{
                 lat:$scope.map.getCenter().lat(), 
                 lng:$scope.map.getCenter().lng()
-              }, 
-              location: {
-                city:city, 
-                state:state, 
-                zip_code:postal_code
               },
+              city:city, 
+              state:state, 
+              zip_code:postal_code,
               createdAt:Date.now(), 
               isPublic:$scope.isPublic, 
               huntName:huntName, 
               markers:huntArr
             });
-            sessionStorage.removeItem('currentMarkerIndex');
-            window.location.href = '#!/edit-hunt/' + savedHunt.key();
+            window.location.href = '#!/view-hunt/' + savedHunt.key();
             savedHunt.on('value', function(snapshot){
               console.log(snapshot.val());
-              console.log(savedHunt.name());
+              console.log(savedHunt.key());
             });
           }
         });
@@ -121,17 +117,23 @@ export default {
   },
   ready() {
     let $scope = this;
-    let ref = new Firebase("https://shining-heat-6737.firebaseio.com");
-    if (localStorage.getItem('authToken') != null) {
-      ref.authWithOAuthToken("facebook", localStorage.getItem('authToken'), function(error, authData) {
-        if (error) {
-          console.log("Login Failed!", error);
-        } else {
-          $scope.userEmail = authData.facebook.email;
-          $scope.userName  = authData.facebook.displayName;
-          console.log(authData);
-        }
-      });
+
+    //Auth login and pulling of user data
+    var ref = new Firebase("https://shining-heat-6737.firebaseio.com");
+    ref.onAuth(authDataCallback);
+    // Create a callback which logs the current auth state
+    function authDataCallback(authData) {
+      if (authData) {
+        $scope.isLoggedIn = true;
+        var user = new Firebase("https://shining-heat-6737.firebaseio.com/users/" + authData.uid);
+        user.on('value', function(snapshot){
+          $scope.user = snapshot.val();
+        }, function(errorObj){
+          console.log('read failed: ', errorObj.code);
+        });
+      } else {
+        $scope.isLoggedIn = false;
+      }
     }
 
     //set default coordinates (Orlando, FL)
@@ -143,7 +145,7 @@ export default {
       navigator.geolocation.getCurrentPosition(showPosition);
       coords.lat = Number(sessionStorage.getItem('latitude'));
       coords.lng = Number(sessionStorage.getItem('longitude'));
-      initMap();
+      initMap(coords);
       function showPosition(position) {
         sessionStorage.setItem('latitude', position.coords.latitude);
         sessionStorage.setItem('longitude', position.coords.longitude)
@@ -155,11 +157,9 @@ export default {
 
     // google.maps.event.addDomListener(window, 'load', initMap);
     //Initialize Google Map
-    function initMap() {
-      let mapCoords = coords || {lat: 28.54, lng: -81.39};
-      console.log('mapCoords: ',mapCoords);
+    function initMap(coords) {
       $scope.map = new google.maps.Map(document.getElementById('map'), {
-        center: mapCoords, 
+        center: coords, 
         zoom: 12,
         panControl:true,
         scrollWheel:true,

@@ -11,7 +11,7 @@
     <div id="main-menu" v-bind:class="{'hide-menu': menuIsClosed}">
       <ul>
         <li v-if="isLoggedIn" v-on:click="closeMenu"><a href="#!/create-hunt">Create Hunt</a></li>
-        <li v-if="isLoggedIn" v-on:click="closeMenu"><a href="#!/my-profile">My Profile</a></li>
+        <li v-if="isLoggedIn" v-on:click="closeMenu"><a href="#!/my-profile/{{userId}}">My Profile</a></li>
         <li v-if="isLoggedIn" v-on:click="logout"><a>Logout</a></li>
         <li v-else v-on:click="login"><a>Login</a></li>
       </ul>
@@ -44,17 +44,19 @@ export default {
       let $scope = this;
       ref.authWithOAuthPopup("facebook", function(error, authData) {
         if (error) {
-          // console.log("Login Failed!", error);
+          console.log("Login Failed!", error);
         } else {
-          console.log("Authenticated successfully with payload:", authData);
-          let userRef = new Firebase("https://shining-heat-6737.firebaseio.com/users/");
-          userRef.push({
-            "uid":authData.uid,
-            "fbid":authData.facebook.id,
-            "name":authData.facebook.displayName,
-            "email":authData.facebook.email
+          let ref = new Firebase("https://shining-heat-6737.firebaseio.com");
+          ref.onAuth(function(authData){
+            if (authData) {
+              //create user record on first login
+              ref.child("users").child(authData.uid).set({
+                provider: authData.provider,
+                name: authData.facebook.displayName,
+                email:authData.facebook.email
+              });
+            }
           });
-          localStorage.setItem('authToken', authData.facebook.accessToken)
           $scope.isLoggedIn = true;
         }
       }, {
@@ -69,16 +71,17 @@ export default {
   },
   created(){
     let $scope = this;
-    if (localStorage.getItem('authToken') != null) {
-      ref.authWithOAuthToken("facebook", localStorage.getItem('authToken'), function(error, authData) {
-        if (error) {
-          // console.log("Login Failed!", error);
-        } else {
-          // console.log("Authenticated successfully with payload:", authData);
-          $scope.isLoggedIn = true;
-          $scope.userId = authData.uid;
-        }
-      });
+    // Register the callback to be fired every time auth state changes
+    var ref = new Firebase("https://shining-heat-6737.firebaseio.com");
+    ref.onAuth(authDataCallback);
+    // Create a callback which logs the current auth state
+    function authDataCallback(authData) {
+      if (authData) {
+        $scope.userId = authData.uid;
+        $scope.isLoggedIn = true;
+      } else {
+        $scope.isLoggedIn = false;
+      }
     }
   }
 }

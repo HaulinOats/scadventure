@@ -31,7 +31,7 @@ router.map({
   '/login': {
     component: LoginView
   },
-  '/my-profile': {
+  '/my-profile/:id': {
     component: ProfileView
   },
   '/create-hunt': {
@@ -41,7 +41,8 @@ router.map({
     component: ShowHuntsView
   },
   '/view-hunt/:id': {
-    component: SingleHuntView
+    component: SingleHuntView,
+    name:"SingleHuntView"
   },
   '/news/:page': {
     component: NewsView
