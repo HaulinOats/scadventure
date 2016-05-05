@@ -13,17 +13,28 @@
 		  </div>
 		  <div id="my-hunts" class="tab-pane fade">
 		    <h3>My Hunts</h3>
-		    <div id="outer-hunt-container">
-			    <div v-for="(key, value) in myHunts" v-link="{name: 'SingleHuntView', params: {id:key}}" class="profile-single-hunt col-xs-12 col-sm-6 col-md-4 col-lg-3">
-				    <div class="col-xs-3 sh-inner profile-sh-left">
-				    	<p><b>{{value.huntName}}</b></p>
+		    <div id="outer-hunt-container" class="container-fluid">
+		    	<div v-for="(key, value) in myHunts" class="single-hunt-outer col-xs-12 col-sm-4 col-md-4 col-lg-3">
+				    <div v-link="{name: 'SingleHuntView', params: {id:key}}" class="profile-single-hunt">
+					   	<h4>{{value.huntName}}</h4>
+					   	<div class="sh-row">
+					   		<p class="pull-left"><b>Location</b>:</p>
+				    		<p class='pull-right'>{{value.city}}, {{value.state}}</p>
+				    		<div class="clearfix"></div>
+				    	</div>
+				    	<div class="sh-row">
+				    		<p class="pull-left"><b>Total Markers</b>:</p> 
+				    		<p class='pull-right'>{{value.markers.length}}</p>
+				    		<div class="clearfix"></div>
+				    	</div>
+				    	<div class="sh-row">
+				    		<p class="pull-left"><b>Is Public</b>:</p>
+				    		<p class='pull-right'>{{value.isPublic}}</p>
+				    		<div class="clearfix"></div>
+				    	</div>
+					    <div class="clearfix"></div>
 				    </div>
-				    <div class="col-xs-9 sh-inner profile-sh-main">
-				    	<p>{{value.city}}, {{value.state}}</p>
-				    	<p>Total Markers: {{value.markers.length}}</p>
-				    </div>
-				    <div class="clearfix"></div>
-			    </div>
+				</div>
 			  </div>
 		  </div>
 		</div>
@@ -75,31 +86,32 @@ export default {
 		padding:0 10px;
 	}
 	#outer-hunt-container {
-		
+		width:100%;
 	}
 	.profile-single-hunt {
-		display:table;
 		border: solid thin;
-    padding: 5px;
-    margin-bottom: 20px;
-    margin-right:10px;
-    border-radius: 10px;
-    background: darkslategray;
-    cursor:pointer;
-    min-height:80px;
+	    border-radius: 10px;
+	    background: darkslategray;
+	    padding:10px;
+	    cursor:pointer;
+	    min-height:80px;
+	    margin-right:1%;
+	    margin-bottom:15px;
 	}
-	.profile-sh-left p{
-		font-size:20px;
+	.profile-single-hunt h4 {
+		margin-top:0;
 	}
-	.sh-inner {
-		display:table-cell;
-		vertical-align: middle;
+	.profile-single-hunt p {
+		font-size:16px;
 	}
-	.profile-sh-main p {
-		text-align: right;
-		font-size:18px;
+	.single-hunt-outer {
+		padding:0;
+		padding-right:15px;
 	}
 	.profile-single-hunt p{
 		margin:0;
+	}
+	.sh-row {
+		border-bottom:solid thin cadetblue;
 	}
 </style>

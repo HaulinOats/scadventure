@@ -139,9 +139,10 @@ export default {
           marker.addListener('click', function(event){
           	$scope.currentMarker = $scope.huntObj.markers[index];
           	$scope.currentMarkerIdx = index;
+          	$scope.map.panTo({lat:$scope.currentMarker.lat, lng:$scope.currentMarker.lng});
           });
-	      });
-	    }
+	    });
+	  }
       console.log($scope.huntObj);
       //Auth login and pulling of user data
 	    var ref = new Firebase("https://shining-heat-6737.firebaseio.com");
